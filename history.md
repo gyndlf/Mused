@@ -37,6 +37,11 @@ Generation also went really funky
 - v12: Same as v11 but training on "bwv588" Canzona in D-Minor {Not bad results}
 >w LSTM.256 + LSTM.128 + DENSE.128 + DENSE.64
  
+- v13: Restarted after long hiatus. Trained on Google Colab, and updated functions to work with new pypianoroll as
+  well as be more descriptive. Same model type as version 10. Training on Goldberg variations?
+>w LSTM.512 + LSTM.128 + DENSE.256 + DENSE.128
+
+
 - v?: Longer lookback (From 2 bars to 4 bars)
 - v?: Back to v10 but smaller training data "bwv653"
 - v?: Train on more data for longer.

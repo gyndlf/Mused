@@ -2,8 +2,6 @@
 
 # Train the specified model with input Midi
 
-# Test change
-
 from time import time
 import keras
 from keras import layers

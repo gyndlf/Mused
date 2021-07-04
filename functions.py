@@ -1,4 +1,6 @@
 # d6595
+# Heavy rewrite on d7042
+
 # The code containing the actual functions for the midi. Can be used across multiple model architectures
 # Basic midi <-> numpy interface
 import matplotlib.pyplot as plt
@@ -176,7 +178,7 @@ def multi_save(piano_rolls, fname):
     print('Saved file "' + fname + '".')
 
 
-def generate_music(model, sample_roll, lookback, temperatures, num_pitches, length=24*4*4, threshold=None):
+def generate_music(model, sample_roll, lookback, temperatures, num_pitches, length=24*4*4, threshold=None, noise=False):
     # Generate some music!
     start_index = random.randint(0, sample_roll.shape[0] - lookback - 1)  # Random starting spot
     print('Generating with seed index of', start_index)
@@ -196,7 +198,7 @@ def generate_music(model, sample_roll, lookback, temperatures, num_pitches, leng
 
         for i in range(length):
             preds = model.predict(sampled, verbose=0)
-            extracted = extract_music(preds, temperature=temperature, threshold=threshold)
+            extracted = extract_music(preds, temperature=temperature, threshold=threshold, noise=noise)
             # print('PREDS:', preds)
             # print(extracted)
             # print(lookback+i)

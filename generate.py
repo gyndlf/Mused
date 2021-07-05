@@ -29,7 +29,7 @@ def extract_music(preds, temperature=1.0, threshold=None, noise=False):
 
 def multi_save(piano_rolls, fname):
     # Saves multiple tracks as one midi, for easy use within logic
-    midi = functions.Midi(70)
+    midi = functions.Midi(70)  # number 70 is a placeholder to be rewritten
     tracks = []
     for i, name in enumerate(piano_rolls):
         midi.load_np(piano_rolls[name])
@@ -43,40 +43,36 @@ def multi_save(piano_rolls, fname):
     print('Saved file "' + fname + '".')
 
 
-def generate_music(model, midi, temperatures, length=24*4*4, threshold=None, noise=False):
+def generate_music(model, midi, temperature, length=24*4*4, threshold=None, noise=False):
     # Generate some music!
     lookback = model.layers[0].input_shape[1]
     num_pitches = model.layers[0].input_shape[2]
 
-    start_index = np.random.randint(0, midi.shape[0] - lookback - 1)  # Random starting spot
+    start_index = np.random.randint(0, midi.shape[0] - lookback + 1)  # Random starting spot
     print('Generating with seed index of', start_index)
     seed = midi[start_index:start_index + lookback, :]
     seed = np.reshape(seed, (1, seed.shape[0], seed.shape[1]))  # np.expanddim to orig
 
-    generated = {}  # temperatures : output
+    print('Generating roll with temp', temperature, 'and length', length)
+    sampled = seed.copy()
 
-    for temperature in temperatures:
-        print('Generating roll with temp', temperature, 'and length', length)
-        sampled = seed.copy()
+    output = np.zeros((1, length + lookback, num_pitches))
+    output[0, :lookback, :] = seed
 
-        output = np.zeros((1, length + lookback, num_pitches))
-        output[0, :lookback, :] = seed
+    # sampled = np.zeros((1, lookback, num_pitches))
 
-        # sampled = np.zeros((1, lookback, num_pitches))
+    for i in range(length):
+        preds = model.predict(sampled, verbose=0)
+        extracted = extract_music(preds, temperature=temperature, threshold=0.5, noise=noise)
+        # print('PREDS:', preds)
+        # print(extracted)
+        # print(lookback+i)
 
-        for i in range(length):
-            preds = model.predict(sampled, verbose=0)
-            extracted = extract_music(preds, temperature=temperature, threshold=0.5, noise=noise)
-            # print('PREDS:', preds)
-            # print(extracted)
-            # print(lookback+i)
+        output[0, lookback + i] = extracted  # Save the work
+        sampled[:, :-1] = sampled[:, 1:]  # Move it over by one
+        sampled[0, -1, :] = extracted  # Add it to the last row
 
-            output[0, lookback + i] = extracted  # Save the work
-            sampled[:, :-1] = sampled[:, 1:]  # Move it over by one
-            sampled[0, -1, :] = extracted  # Add it to the last row
-
-        generated[temperature] = output
-    return generated
+    return output
 
 
 def main():
@@ -106,7 +102,9 @@ def main():
     roller = functions.Midi(num_pitches)
     roller.load_midi([args.midi])
 
-    print(generate_music(model, roller.roll, args.temp, length=args.length, noise=args.noise))
+    for temp in args.temp:
+        print("Generating for temperature", temp)
+        print(generate_music(model, roller.roll, temp, length=args.length, noise=args.noise))
 
 
 if __name__ == '__main__':

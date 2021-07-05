@@ -30,10 +30,10 @@ def multi_save(piano_rolls, fname):
     # Saves multiple tracks as one midi, for easy use within logic
     midi = functions.Midi(70)
     tracks = []
-    for i, temp in enumerate(piano_rolls):
-        midi.load_np(piano_rolls[temp])
+    for i, name in enumerate(piano_rolls):
+        midi.load_np(piano_rolls[name])
         roll = midi.reformat_roll()
-        t = pypianoroll.BinaryTrack(pianoroll=roll, program=0, is_drum=False, name='Gen Roll T' + str(temp))
+        t = pypianoroll.BinaryTrack(pianoroll=roll, program=0, is_drum=False, name='Generated-' + str(name))
         tracks.append(t)
     print('Saving', len(tracks), 'tracks in one file "' + fname + '".')
     mt = pypianoroll.Multitrack(tracks=tracks)

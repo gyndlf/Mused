@@ -45,6 +45,7 @@ class Gru:
     def train(self, x, y, epochs, batch_size=128, save_every=2, generate_every=10):
         begin = time()
         historys = []
+        generated = {}
         for i in range(epochs):
             print('>Epoch', i+1)
             tic = time()
@@ -60,9 +61,9 @@ class Gru:
                 self.save(self.model_dir + self.name + "-epoch-" + str(i) + ".h5")
 
             if i % generate_every == 0:
-                out = generate.generate_music(self.model, x, [0.6], length=x.shape[0]*2, noise=True)
-                generate.multi_save(out, "outputs/generated-" + self.name + "-epoch-" + str(i) + ".h5")
+                generated["epoch-"+str(i+1)] = generate.generate_music(self.model, x, [0.6], length=x.shape[0]*2, noise=True)
 
+        generate.multi_save(generated, "outputs/generated-batch-" + self.name + ".mid")
         print('Full train took %s minutes.' % ((time() - begin) / 60).__round__(2))
         return historys
 

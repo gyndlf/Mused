@@ -1,6 +1,7 @@
 # d7043
 
 # Train the specified model with input Midi
+# Training model functions
 
 from time import time
 import keras

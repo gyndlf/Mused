@@ -1,6 +1,7 @@
 # d7043
 
 # Generate music based on a seed
+# Generation functions
 
 import argparse
 import functions

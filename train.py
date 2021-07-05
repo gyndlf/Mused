@@ -62,7 +62,7 @@ class Gru:
                 self.save(self.model_dir + self.name + "-epoch-" + str(i) + ".h5")
 
             if i % generate_every == 0:
-                generated["epoch-"+str(i+1)] = generate.generate_music(self.model, x, [0.6], length=x.shape[0]*2, noise=True)
+                generated["epoch-"+str(i+1)] = generate.generate_music(self.model, x[0], [0.6], length=x[0].shape[0]*2, noise=True)
 
         generate.multi_save(generated, "outputs/generated-batch-" + self.name + ".mid")
         print('Full train took %s minutes.' % ((time() - begin) / 60).__round__(2))

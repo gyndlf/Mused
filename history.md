@@ -41,6 +41,8 @@ Generation also went really funky
 Beat resolution: 24, Lookback: 4 bars. Okayish result
 >w LSTM.128 + DENSE.128
 
+- v14: Much smaller model and attempted to get model to overfit to the data. Trained on Goldberg on deeplearn
+>w LSTM.64 + DENSE.128 + DENSE.64 + DROPOUT-0.2
 
 - v?: Longer lookback (From 2 bars to 4 bars)
 - v?: Back to v10 but smaller training data "bwv653"

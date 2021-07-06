@@ -47,11 +47,12 @@ class Gru:
     def build(self, lookback, num_pitches, loss='mse'):
         # Build the model architecture
         model = models.Sequential()
-        model.add(layers.LSTM(128, input_shape=(lookback, num_pitches), return_sequences=False,
+        model.add(layers.LSTM(64, input_shape=(lookback, num_pitches), return_sequences=False,
                               dropout=0.1, recurrent_dropout=0.2))
         # model.add(layers.LSTM(128, dropout=0.1, recurrent_dropout=0.2, return_sequences=False))
         model.add(layers.Dense(128, activation='relu'))
-        # model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dropout(0.2))
         model.add(layers.Dense(num_pitches, activation='sigmoid'))
         model.summary()
         print("Model built.")

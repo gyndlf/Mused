@@ -11,6 +11,7 @@ import pypianoroll
 #  - Fix tempos. Make sure they are always the same
 #  - Trim silence
 #  - Force piece to be in the same key
+#  - Convert from print statements to logging
 
 MIDDLE_C = 64
 MIDI_INPUTS = 128  # Length the rolls pitches must be

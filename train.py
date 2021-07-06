@@ -4,7 +4,6 @@
 # Training model functions
 
 from time import time
-import numpy as np
 import tensorflow as tf
 from tensorflow import keras  # import from tensorflow for better support??? I dunno
 from tensorflow.keras import layers
@@ -15,21 +14,26 @@ import generate
 
 class GenerateMusic(tf.keras.callbacks.Callback):
     """Callback to generate music during training"""
-    def __init__(self, gen_roll, gen_every=5, length=24*4*2, threshold=0.7):
+    def __init__(self, gen_roll, gen_every=5, length=24*4*2, threshold=0.7, temp=0.7):
         super(GenerateMusic, self).__init__()
         self.generated = {}
         self.gen_every = gen_every
         self.roll = gen_roll
         self.length = length
         self.threshold = threshold
+        self.temp = temp
 
     def on_epoch_end(self, epoch, logs=None):
         if epoch % self.gen_every == 0:
             # Generate some music
-            self.generated["epoch-" + str(epoch + 1)] = generate.generate_music(self.model, self.roll, 0.8, length=self.length, threshold=self.threshold)
+            self.generated["epoch-" + str(epoch + 1)] = generate.generate_music(self.model, self.roll, self.temp,
+                                                                                length=self.length,
+                                                                                threshold=self.threshold, noise=True)
 
     def on_train_end(self, logs=None):
-        self.generated["last-generation"] = generate.generate_music(self.model, self.roll, 0.8, length=self.length, threshold=self.threshold)
+        self.generated["last-generation"] = generate.generate_music(self.model, self.roll, self.temp,
+                                                                    length=self.length, threshold=self.threshold,
+                                                                    noise=True)
         generate.multi_save(self.generated, "outputs/generated-during-training.mid")
 
 
@@ -58,7 +62,7 @@ class Gru:
         self.model = model
 
     def set_model(self, model):
-        print("Overwriting model -- Ensure that correct dimesions are being used")
+        print("Overwriting model -- Ensure that correct dimensions are being used")
         self.model = model
 
     def load(self, fname):
@@ -68,8 +72,6 @@ class Gru:
         save_model(self.model, fname)
 
     def train(self, x, y, epochs, callbacks, batch_size=128):
-        historys = []  # Kept for legacy purposes
-
         tic = time()
         history = self.model.fit(x, y,
                                  epochs=epochs,
@@ -77,6 +79,7 @@ class Gru:
                                  verbose=1,
                                  callbacks=callbacks)
 
+        historys = [history]  # Kept for legacy purposes
         self.save(self.model_dir + self.name + ".h5")  # Save the model
         print('Full train took %s minutes.' % ((time() - tic) / 60).__round__(2))
         return historys

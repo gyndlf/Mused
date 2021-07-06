@@ -86,7 +86,7 @@ def main():
     parser.add_argument(
         '-t', '--temp', required=False, nargs='+', type=float, help="Temperatures to bake with. Default [0.6]")
     parser.add_argument(
-        '-n', '--noise', action='store_true', help="Add noise to the result. Else default to threshold"
+        '--no-noise', action='store_false', help="Remove noise to the result. Default to false"
     )
     parser.add_argument(
         '--thresh', default=0.5, type=float, help="Set threshold value. Default [0.5]"
@@ -105,11 +105,13 @@ def main():
     roller = functions.Midi(num_pitches)
     roller.load_midi([args.midi])
 
+    print("Using length of %s and threshold of %s or potentially with noise (%s)" %
+          (args.length, args.thresh, args.no_noise))
+
     outputs = {}
     for temp in args.temp:
-        print("Generating for temperature", temp)
         outputs["Temp-" + str(temp)] = generate_music(model, roller.roll, temp, length=args.length,
-                                                      noise=args.noise, threshold=args.thresh)
+                                                      noise=args.no_noise, threshold=args.thresh)
     multi_save(outputs, 'outputs/generated.mid')
 
 

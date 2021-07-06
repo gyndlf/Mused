@@ -4,14 +4,37 @@
 # Training model functions
 
 from time import time
-import keras
-from keras import layers
-from keras import models
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras  # import from tensorflow for better support??? I dunno
+from tensorflow.keras import layers
+from tensorflow.keras import models
 import matplotlib.pyplot as plt
 import generate
 
 
+class GenerateMusic(tf.keras.callbacks.Callback):
+    """Callback to generate music during training"""
+    def __init__(self, gen_roll, gen_every=5, length=24*4*2, threshold=0.7):
+        super(GenerateMusic, self).__init__()
+        self.generated = {}
+        self.gen_every = gen_every
+        self.roll = gen_roll
+        self.length = length
+        self.threshold = threshold
+
+    def on_epoch_end(self, epoch, logs=None):
+        if epoch % self.gen_every == 0:
+            # Generate some music
+            self.generated["epoch-" + str(epoch + 1)] = generate.generate_music(self.model, self.roll, 0.8, length=self.length, threshold=self.threshold)
+
+    def on_train_end(self, logs=None):
+        self.generated["last-generation"] = generate.generate_music(self.model, self.roll, 0.8, length=self.length, threshold=self.threshold)
+        generate.multi_save(self.generated, "outputs/generated-during-training.mid")
+
+
 class Gru:
+    """The controlling class for the training model"""
     def __init__(self, name, model_dir="models/"):
         self.model = None
         self.name = name
@@ -44,30 +67,18 @@ class Gru:
     def save(self, fname):
         save_model(self.model, fname)
 
-    def train(self, x, y, epochs, batch_size=128, save_every=2, generate_every=10):
-        begin = time()
-        historys = []
-        generated = {}
-        for i in range(epochs):
-            print('>Epoch', i+1)
-            tic = time()
-            history = self.model.fit(x, y,
-                                epochs=1,
-                                batch_size=batch_size,
-                                verbose=1)
-            print('Took %s minutes for epoch %s. %s minutes elapsed.' % (
-            ((time() - tic) / 60).__round__(2), i+1, ((time() - begin) / 60).__round__(2)))
-            historys.append(history)
+    def train(self, x, y, epochs, callbacks, batch_size=128):
+        historys = []  # Kept for legacy purposes
 
-            if i % save_every == 0:
-                self.save(self.model_dir + self.name + "-epoch-" + str(i+1) + ".h5")
+        tic = time()
+        history = self.model.fit(x, y,
+                                 epochs=epochs,
+                                 batch_size=batch_size,
+                                 verbose=1,
+                                 callbacks=callbacks)
 
-            if i % generate_every == 0:
-                generated["epoch-"+str(i+1)] = generate.generate_music(self.model, x[0,:,:], 0.8, length=x[0,:,:].shape[0], noise=False)
-
-        generated["last-generation"] = generate.generate_music(self.model, x[0, :, :], 0.8, length=x[0, :, :].shape[0], noise=False)
-        generate.multi_save(generated, "outputs/generated-batch-" + self.name + ".mid")
-        print('Full train took %s minutes.' % ((time() - begin) / 60).__round__(2))
+        self.save(self.model_dir + self.name + ".h5")  # Save the model
+        print('Full train took %s minutes.' % ((time() - tic) / 60).__round__(2))
         return historys
 
 

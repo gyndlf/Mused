@@ -20,17 +20,18 @@ class Gru:
     def build(self, lookback, num_pitches, loss='mse'):
         # Build the model architecture
         model = models.Sequential()
-        model.add(layers.LSTM(128, input_shape=(lookback, num_pitches), return_sequences=False, dropout=0.1, recurrent_dropout=0.2))
-        #model.add(layers.LSTM(128, dropout=0.1, recurrent_dropout=0.2, return_sequences=False))
+        model.add(layers.LSTM(128, input_shape=(lookback, num_pitches), return_sequences=False,
+                              dropout=0.1, recurrent_dropout=0.2))
+        # model.add(layers.LSTM(128, dropout=0.1, recurrent_dropout=0.2, return_sequences=False))
         model.add(layers.Dense(128, activation='relu'))
-        #model.add(layers.Dense(64, activation='relu'))
+        # model.add(layers.Dense(64, activation='relu'))
         model.add(layers.Dense(num_pitches, activation='sigmoid'))
         model.summary()
         print("Model built.")
 
         model.compile(loss=loss,  # categorical_crossentropy or mse
                       optimizer=keras.optimizers.RMSprop(learning_rate=1e-04),
-                      metrics=['acc'])
+                      metrics=["acc", "mean_absolute_error"])
         self.model = model
 
     def set_model(self, model):
@@ -59,12 +60,12 @@ class Gru:
             historys.append(history)
 
             if i % save_every == 0:
-                self.save(self.model_dir + self.name + "-epoch-" + str(i) + ".h5")
+                self.save(self.model_dir + self.name + "-epoch-" + str(i+1) + ".h5")
 
             if i % generate_every == 0:
-                generated["epoch-"+str(i+1)] = generate.generate_music(self.model, x[0,:,:], 0.6, length=x[0,:,:].shape[0], noise=True)
+                generated["epoch-"+str(i+1)] = generate.generate_music(self.model, x[0,:,:], 0.8, length=x[0,:,:].shape[0], noise=False)
 
-        generated["last-generation"] = generate.generate_music(self.model, x[0, :, :], 0.6, length=x[0, :, :].shape[0], noise=True)
+        generated["last-generation"] = generate.generate_music(self.model, x[0, :, :], 0.8, length=x[0, :, :].shape[0], noise=False)
         generate.multi_save(generated, "outputs/generated-batch-" + self.name + ".mid")
         print('Full train took %s minutes.' % ((time() - begin) / 60).__round__(2))
         return historys

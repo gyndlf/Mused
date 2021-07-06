@@ -43,7 +43,7 @@ def multi_save(piano_rolls, fname):
     print('Saved file "' + fname + '".')
 
 
-def generate_music(model, midi, temperature, length=24*4*4, threshold=None, noise=False):
+def generate_music(model, midi, temperature, length=24*4*4, threshold=0.5, noise=False):
     # Generate some music!
     lookback = model.layers[0].input_shape[1]
     num_pitches = model.layers[0].input_shape[2]
@@ -63,7 +63,7 @@ def generate_music(model, midi, temperature, length=24*4*4, threshold=None, nois
 
     for i in range(length):
         preds = model.predict(sampled, verbose=0)
-        extracted = extract_music(preds, temperature=temperature, threshold=0.5, noise=noise)
+        extracted = extract_music(preds, temperature=temperature, threshold=threshold, noise=noise)
         # print('PREDS:', preds)
         # print(extracted)
         # print(lookback+i)
@@ -88,10 +88,13 @@ def main():
     parser.add_argument(
         '-n', '--noise', action='store_true', help="Add noise to the result. Else default to threshold"
     )
+    parser.add_argument(
+        '--thresh', default=0.5, type=float, help="Set threshold value. Default [0.5]"
+    )
     args = parser.parse_args()
 
     if args.length is None:
-        args.length = 24*4*4  # Set it to 4 bars
+        args.length = 24*4*4  # Set it to 16 1/4 notes (4 bars)
 
     if args.temp is None:
         args.temp = [0.6]
@@ -102,9 +105,12 @@ def main():
     roller = functions.Midi(num_pitches)
     roller.load_midi([args.midi])
 
+    outputs = {}
     for temp in args.temp:
         print("Generating for temperature", temp)
-        print(generate_music(model, roller.roll, temp, length=args.length, noise=args.noise))
+        outputs["Temp-" + str(temp)] = generate_music(model, roller.roll, temp, length=args.length,
+                                                      noise=args.noise, threshold=args.thresh)
+    multi_save(outputs, 'outputs/generated.mid')
 
 
 if __name__ == '__main__':

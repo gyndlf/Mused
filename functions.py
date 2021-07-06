@@ -23,7 +23,7 @@ class Midi:
         self.num_pitches = num_pitches  # Total number of pitches either side of middle c
         self.notes_above = num_pitches // 2
         self.cut = cut  # if to get rid of all pitches not in the range
-
+        self.tempo = None  # Approx tempo of the piece
         self.roll = None  # Is the pianoroll (Numpy array)
 
     def display(self, title='Piano Roll'):
@@ -45,6 +45,7 @@ class Midi:
         for fname in fnames:
             multitrack = pypianoroll.read(fname)
             multitrack.set_resolution(self.beat_resolution)
+            self.tempo = multitrack.tempo.mean()
             # piano_multitrack.trim_trailing_silence()
             roll = multitrack.binarize().blend('any')
             print('---')
@@ -75,7 +76,7 @@ class Midi:
 
         self.roll = extended
 
-    def load_np(self, roll):
+    def load_np(self, roll, tempo=120):
         # Import pianoroll from numpy array
         if len(roll.shape) > 2:
             roll = np.reshape(roll, (roll.shape[1], roll.shape[2]))
@@ -90,6 +91,7 @@ class Midi:
             self.cut = True
             print("Roll is cut down to only", self.num_pitches, "notes")
         self.roll = roll
+        self.tempo = tempo
 
     def vectorise(self, lookback, step=1):
         # Now convert to phrases with a corresponding label

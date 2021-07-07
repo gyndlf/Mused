@@ -3,11 +3,13 @@
 # Generate music based on a seed
 # Generation functions
 
-import argparse
 import functions
 import numpy as np
 import pypianoroll
 import train
+
+# TODO:
+#  - Generate music in parallel
 
 
 def extract_music(preds, temperature=1.0, threshold=None, noise=False):
@@ -76,15 +78,16 @@ def generate_music(model, midi, temperature, length=24*4*4, threshold=0.5, noise
 
 
 def main():
+    import argparse
     parser = argparse.ArgumentParser(description="Generate midi according to the sample input and model.")
     parser.add_argument(
         'midi', type=str, help="Input midi file to sample")
     parser.add_argument(
         'model', type=str, help="Input model to generate with")
     parser.add_argument(
-        '-l', '--length', required=False, type=int, help="Length of generated string. Default [24*4*4]")
+        '-l', '--length', required=False, type=int, default=24*4*4, help="Length of generated string. Default [24*4*4]")
     parser.add_argument(
-        '-t', '--temp', required=False, nargs='+', type=float, help="Temperatures to bake with. Default [0.6]")
+        '-t', '--temp', required=False, default=[0.2, 0.4, 0.45, 0.6, 0.8, 1.0], nargs='+', type=float, help="Temperatures to bake with. Default [0.6]")
     parser.add_argument(
         '--no-noise', action='store_false', help="Remove noise to the result. Default to false"
     )
@@ -93,12 +96,7 @@ def main():
     )
     args = parser.parse_args()
 
-    if args.length is None:
-        args.length = 24*4*4  # Set it to 16 1/4 notes (4 bars)
-
-    if args.temp is None:
-        args.temp = [0.6]
-
+    print(args)
     model = train.load_model(args.model)
     num_pitches = model.layers[0].input_shape[2]
 

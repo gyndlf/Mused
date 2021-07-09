@@ -46,21 +46,22 @@ class Gru:
         self.name = name
         self.model_dir = model_dir
 
-    def build(self, lookback, num_pitches, loss='mse'):
+    def build(self, lookback, num_pitches, loss='binary_crossentropy'):
         # Build the model architecture
         model = models.Sequential()
-        model.add(layers.LSTM(64, input_shape=(lookback, num_pitches), return_sequences=False,
-                              dropout=0.1, recurrent_dropout=0.2))
-        # model.add(layers.LSTM(128, dropout=0.1, recurrent_dropout=0.2, return_sequences=False))
-        model.add(layers.Dense(128, activation='relu'))
-        model.add(layers.Dense(64, activation='relu'))
-        model.add(layers.Dropout(0.2))
+        model.add(layers.LSTM(256, input_shape=(lookback, num_pitches), return_sequences=True,
+                              dropout=0.3, recurrent_dropout=0.3))
+        model.add(layers.LSTM(512, dropout=0.3, recurrent_dropout=0.2, return_sequences=True))
+        model.add(layers.LSTM(256, return_sequences=False))
+        model.add(layers.Dense(256, activation='relu'))
+        model.add(layers.Dropout(0.3))
+        # model.add(layers.Dense(64, activation='relu'))
         model.add(layers.Dense(num_pitches, activation='sigmoid'))
         model.summary()
         print("Model built.")
 
-        model.compile(loss=loss,  # categorical_crossentropy or mse
-                      optimizer=keras.optimizers.RMSprop(learning_rate=1e-04),
+        model.compile(loss=loss,  # categorical_crossentropy or mse or binary_crossentropy
+                      optimizer=keras.optimizers.RMSprop(),
                       metrics=["acc", "mean_absolute_error"])
         self.model = model
 
@@ -126,16 +127,13 @@ def plot_history(historys):
 
 def main():
     # Train the network from the command line
-    import argparse
-    import functions
-    import datetime
     parser = argparse.ArgumentParser(description="Train the model using the input settings.")
     parser.add_argument(
         'midi', type=str, nargs='+', help="Input midi file to train from")
     parser.add_argument(
         '-r', '--resolution', type=int, required=False, default=24, help="Beat resolution of a quarter note (1/4) [24]")
     parser.add_argument(
-        "-l", '--loss', type=str, required=False, default="mse", help="Loss function to use [mse]")
+        "-l", '--loss', type=str, required=False, default="binary_crossentropy", help="Loss function to use [binary_crossentropy]")
     parser.add_argument(
         'name', type=str, help="Name for the model. Usually 'lstm-v?'")
     parser.add_argument(
@@ -145,14 +143,15 @@ def main():
     parser.add_argument(
         "--generate-temp", type=float, required=False, default=0.7, help="Temperature during generation while training [0.7]")
     parser.add_argument(
-        "-g", "--gen-every", type=int, required=False, default=3, help="Generate music every __ epochs [3]")
+        "-g", "--gen-every", type=int, required=False, default=3, help="Generate music every [3] epochs")
     parser.add_argument(
         "-n", "--num-notes", type=int, required=False, default=50, help="Total range of notes to work with [50]")
     parser.add_argument(
         "-lb", "--lookback", type=int, required=False, default=24*4*2, help="How far the model looks back [24*4*4]")
     parser.add_argument(
-        "-b", "--batch", type=int, required=False, default=128, help="Batch size [128]"
-    )
+        "-b", "--batch", type=int, required=False, default=128, help="Batch size [128]")
+    parser.add_argument(
+        "--model", type=str, required=False, default=None, help="Model to continue to train from [None]")
 
     args = parser.parse_args()
 
@@ -166,6 +165,10 @@ def main():
 
     gru = Gru(args.name)
     gru.build(args.lookback, args.num_notes, loss=args.loss)
+
+    if args.model is not None:
+        print("Loading model " + args.model + " to over-ride weights")
+        gru.model = load_model(args.model)
 
     callbacks = [
         tf.keras.callbacks.EarlyStopping(patience=args.patience, restore_best_weights=False, monitor="loss"),
@@ -185,4 +188,7 @@ def main():
 
 
 if __name__ == '__main__':
+    import argparse
+    import functions
+    import datetime
     main()

@@ -96,7 +96,7 @@ def main():
     )
     args = parser.parse_args()
 
-    print(args)
+    print("Using settings (Remember, no-noise is opposite)", args)
     model = train.load_model(args.model)
     num_pitches = model.layers[0].input_shape[2]
 

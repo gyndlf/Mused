@@ -42,7 +42,8 @@ Beat resolution: 24, Lookback: 4 bars. Okayish result
 >w LSTM.128 + DENSE.128
 
 - v14: Different loss function, used "binary_crossentropy". Trained on Goldberg on deeplearn
->w LSTM.64 + DENSE.128 + DENSE.64 + DROPOUT-0.2
+Beat resolution: 4, Lookback: 8 bars
+>w LSTM.256 + LSTM.512 + LSTM.256 + DENSE.256 + DROPOUT-0.3
 
 - v?: Longer lookback (From 2 bars to 4 bars)
 - v?: Back to v10 but smaller training data "bwv653"

@@ -14,9 +14,10 @@ from tensorflow.keras import models
 import matplotlib.pyplot as plt
 import generate
 
+
 class GenerateMusic(tf.keras.callbacks.Callback):
     """Callback to generate music during training"""
-    def __init__(self, gen_roll, gen_every=5, length=24*4*2, threshold=0.7, temp=0.7):
+    def __init__(self, gen_roll, gen_every=5, length=24*4*2, threshold=0.7, temp=0.5):
         super(GenerateMusic, self).__init__()
         self.generated = {}
         self.gen_every = gen_every
@@ -48,21 +49,30 @@ class Gru:
 
     def build(self, lookback, num_pitches, loss='binary_crossentropy'):
         # Build the model architecture
-        model = models.Sequential()
-        model.add(layers.LSTM(256, input_shape=(lookback, num_pitches), return_sequences=True,
-                              dropout=0.3, recurrent_dropout=0.3))
-        model.add(layers.LSTM(512, dropout=0.3, recurrent_dropout=0.2, return_sequences=True))
-        model.add(layers.LSTM(256, return_sequences=False))
-        model.add(layers.Dense(256, activation='relu'))
-        model.add(layers.Dropout(0.3))
+        #model = models.Sequential()
+        #model.add(layers.LSTM(256, input_shape=(lookback, num_pitches), return_sequences=True,
+        #                      dropout=0.3, recurrent_dropout=0.3))
+        #model.add(layers.LSTM(512, dropout=0.3, recurrent_dropout=0.2, return_sequences=True))
+        #model.add(layers.LSTM(256, return_sequences=False))
+        #model.add(layers.Dense(256, activation='relu'))
+        #model.add(layers.Dropout(0.3))
         # model.add(layers.Dense(64, activation='relu'))
-        model.add(layers.Dense(num_pitches, activation='sigmoid'))
+        #model.add(layers.Dense(num_pitches, activation='sigmoid'))
+
+        input_layer = layers.Input(shape=(lookback, num_pitches))
+        conv1 = layers.Conv1D(filters=32, kernel_size=8, strides=1, activation='relu', padding='same')(input_layer)
+        lstm1 = layers.LSTM(128, return_sequences=True, dropout=0.2, recurrent_dropout=0.2,)(conv1)
+        lstm2 = layers.LSTM(256, return_sequences=False, dropout=0.2, recurrent_dropout=0.2,)(lstm1)
+        dense1 = layers.Dense(128, activation='relu')(lstm2)
+        output_layer = layers.Dense(num_pitches, activation='sigmoid')(dense1)
+        model = models.Model(inputs=input_layer, outputs=output_layer)
+
         model.summary()
         print("Model built.")
 
         model.compile(loss=loss,  # categorical_crossentropy or mse or binary_crossentropy
                       optimizer=keras.optimizers.RMSprop(),
-                      metrics=["acc", "mean_absolute_error"])
+                      metrics=["accuracy", "mean_absolute_error"])
         self.model = model
 
     def set_model(self, model):
@@ -105,7 +115,7 @@ def plot_history(historys):
     loss = []
 
     for history in historys:
-        acc.append(history.history['acc'])
+        acc.append(history.history['accuracy'])
         loss.append(history.history['loss'])
 
     epochs = range(1, len(acc) + 1)
@@ -141,7 +151,7 @@ def main():
     parser.add_argument(
         "--patience", type=int, required=False, default=3, help="How long to wait [3]")
     parser.add_argument(
-        "--generate-temp", type=float, required=False, default=0.7, help="Temperature during generation while training [0.7]")
+        "--generate-temp", type=float, required=False, default=0.55, help="Temperature during generation while training [0.55]")
     parser.add_argument(
         "-g", "--gen-every", type=int, required=False, default=3, help="Generate music every [3] epochs")
     parser.add_argument(

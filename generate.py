@@ -47,8 +47,8 @@ def multi_save(piano_rolls, fname):
 
 def generate_music(model, midi, temperature, length=24*4*4, threshold=0.5, noise=False):
     # Generate some music!
-    lookback = model.layers[0].input_shape[1]
-    num_pitches = model.layers[0].input_shape[2]
+    lookback = model.layers[0].input_shape[0][1]  # Changed as model is now no longer sequential.
+    num_pitches = model.layers[0].input_shape[0][2]  # If sequential, remove 0 from both
 
     start_index = np.random.randint(0, midi.shape[0] - lookback + 1)  # Random starting spot
     print('Generating with seed index of', start_index)
@@ -87,7 +87,7 @@ def main():
     parser.add_argument(
         '-l', '--length', required=False, type=int, default=24*4*4, help="Length of generated string. Default [24*4*4]")
     parser.add_argument(
-        '-t', '--temp', required=False, default=[0.2, 0.4, 0.45, 0.6, 0.8, 1.0], nargs='+', type=float, help="Temperatures to bake with. Default [0.6]")
+        '-t', '--temp', required=False, default=[0.2, 0.4, 0.45, 0.6, 0.8, 1.0], nargs='+', type=float, help="Temperatures to bake with. Default [range]")
     parser.add_argument(
         '--no-noise', action='store_false', help="Remove noise to the result. Default to false"
     )

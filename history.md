@@ -42,10 +42,15 @@ Beat resolution: 24, Lookback: 4 bars. Okayish result
 >w LSTM.128 + DENSE.128
 
 - v14: Different loss function, used "binary_crossentropy". Trained on Goldberg on deeplearn
-Beat resolution: 4, Lookback: 8 bars
+Beat resolution: 4, Lookback: 8 bars (Very good results... almost too good, might have memorised them)
 >w LSTM.256 + LSTM.512 + LSTM.256 + DENSE.256 + DROPOUT-0.3
+
+- v15: Use of time distributed layers to add a convnet ontop of the LSTM to get some higher level feature extraction.
+
+>w [] --- FILL IN ----
 
 - v?: Longer lookback (From 2 bars to 4 bars)
 - v?: Back to v10 but smaller training data "bwv653"
 - v?: Train on more data for longer.
 - v?: Train on jazz
+- v?: Use a convnet to try and grab some patterns to start

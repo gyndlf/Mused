@@ -98,7 +98,7 @@ def main():
 
     print("Using settings (Remember, no-noise is opposite)", args)
     model = train.load_model(args.model)
-    num_pitches = model.layers[0].input_shape[2]
+    num_pitches = model.layers[0].input_shape[0][2]
 
     roller = functions.Midi(num_pitches)
     roller.load_midi([args.midi])

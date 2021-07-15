@@ -3,6 +3,7 @@
 
 # The code containing the actual functions for the midi. Can be used across multiple model architectures
 # Basic midi <-> numpy interface
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pypianoroll
@@ -35,11 +36,21 @@ class Midi:
         plt.title(title)
         plt.show()
 
-    def load_midi(self, fnames):
+    def load_midi(self, fnames, midi_dir='midi'):
         if self.cut:
             print('Lower bound %s.' % (MIDDLE_C - self.notes_above))
             print('Upper bound %s.' % (MIDDLE_C + self.notes_above))
             print('Num pitches', self.num_pitches)
+
+        if fnames == '*':
+            # Then load all midi files
+            print("Interpreting special character to load all midi files in midi/")
+            all = os.listdir(midi_dir)
+            fnames = []
+            for f in all:
+                name, ext = os.path.splitext(f)
+                if ext == '.mid':
+                    fnames.append(f)
 
         rolls = []
         roll_length = 0

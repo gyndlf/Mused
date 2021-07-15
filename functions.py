@@ -36,21 +36,23 @@ class Midi:
         plt.title(title)
         plt.show()
 
-    def load_midi(self, fnames, midi_dir='midi'):
+    def load_midi(self, fnames, midi_dir='midi/'):
         if self.cut:
             print('Lower bound %s.' % (MIDDLE_C - self.notes_above))
             print('Upper bound %s.' % (MIDDLE_C + self.notes_above))
             print('Num pitches', self.num_pitches)
 
-        if fnames == '*':
+        if fnames.__contains__('+'):
             # Then load all midi files
             print("Interpreting special character to load all midi files in midi/")
             all = os.listdir(midi_dir)
             fnames = []
             for f in all:
                 name, ext = os.path.splitext(f)
+                print(ext)
                 if ext == '.mid':
-                    fnames.append(f)
+                    fnames.append(midi_dir + f)
+            print("Using", fnames, "midi files")
 
         rolls = []
         roll_length = 0

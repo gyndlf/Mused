@@ -141,7 +141,7 @@ def main():
     # Train the network from the command line
     parser = argparse.ArgumentParser(description="Train the model using the input settings.")
     parser.add_argument(
-        'midi', type=str, nargs='+', help="Input midi file to train from")
+        'midi', type=str, nargs='+', help="Input midi file to train from. '+' for all")
     parser.add_argument(
         '-r', '--resolution', type=int, required=False, default=24, help="Beat resolution of a quarter note (1/4) [24]")
     parser.add_argument(

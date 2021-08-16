@@ -49,7 +49,6 @@ class Midi:
             fnames = []
             for f in all:
                 name, ext = os.path.splitext(f)
-                print(ext)
                 if ext == '.mid':
                     fnames.append(midi_dir + f)
             print("Using", fnames, "midi files")

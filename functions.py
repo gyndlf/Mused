@@ -30,6 +30,7 @@ class Midi:
         self.roll = None  # Is the pianoroll (Numpy array)
 
     def display(self, title='Piano Roll'):
+        """Display the piano roll as a plot"""
         plt.figure(figsize=(8, 6))
         plt.matshow(self.roll, fignum=1, aspect='auto', cmap='plasma')
         plt.xlabel('Pitch')
@@ -38,6 +39,7 @@ class Midi:
         plt.show()
 
     def load_midi(self, fnames, midi_dir='midi/'):
+        """Load the midi, process it and save"""
         if self.cut:
             print('Lower bound %s.' % (MIDDLE_C - self.notes_above))
             print('Upper bound %s.' % (MIDDLE_C + self.notes_above))
@@ -91,7 +93,7 @@ class Midi:
         self.roll = extended
 
     def load_np(self, roll, tempo=120):
-        # Import pianoroll from numpy array
+        """Import pianoroll from numpy array"""
         if len(roll.shape) > 2:
             roll = np.reshape(roll, (roll.shape[1], roll.shape[2]))
         if roll.shape[1] > MIDI_INPUTS:
@@ -108,7 +110,7 @@ class Midi:
         self.tempo = tempo
 
     def vectorise(self, lookback, step=1):
-        # Now convert to phrases with a corresponding label
+        """Convert to phrases with a corresponding label"""
         phrases = []
         next_notes = []
         for i in range(0, self.roll.shape[0] - lookback, step):
@@ -127,13 +129,14 @@ class Midi:
         return x, y
 
     def reformat_roll(self):
-        # Add back the original dimensions
+        """Add back the original dimensions"""
         export = np.zeros((self.roll.shape[0], MIDI_INPUTS))
         export[:, MIDDLE_C-self.notes_above:MIDDLE_C+self.notes_above] = self.roll
         # export *= 100  # To make louder. Removed as bool
         return export
 
     def save(self, fname):
+        """Save the midi as .midi"""
         if self.cut:
             roll = self.reformat_roll()
         else:
@@ -147,7 +150,7 @@ class Midi:
         mt.write(fname)
 
     def preview_data(self, midi_fname, fname='outputs/preview.mid', beat_resolution=None):
-        # Test the functions to see if they work
+        """Test the functions to see if they work"""
         if beat_resolution is None:
             beat_resolution = self.beat_resolution
         print('Extracting "' + midi_fname + '" with beat resolution of', beat_resolution)
@@ -155,18 +158,22 @@ class Midi:
         self.load_midi([midi_fname])
         self.save(fname)
 
+
 def save_model(model, fname):
+    """Save the input model"""
     model.save(fname)
     print('Saved model "' + fname + '"')
 
 
 def load_model(fname):
+    """Return the input model"""
     model = models.load_model(fname)
     print('Loaded model "' + fname + '"')
     return model
 
 
 def plot_history(historys):
+    """Plot the training histories"""
     acc = []
     loss = []
 

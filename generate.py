@@ -6,13 +6,13 @@
 import functions
 import numpy as np
 import pypianoroll
-import train
 
 # TODO:
 #  - Generate music in parallel
 
 
 def extract_music(preds, temperature=1.0, threshold=None, noise=False):
+    """Extract the new line from the predictions (Booleanise)"""
     preds = np.asarray(preds).astype('float64')  # Convert to np array
     preds = np.log(preds) / temperature
     preds = np.exp(preds)
@@ -30,7 +30,7 @@ def extract_music(preds, temperature=1.0, threshold=None, noise=False):
 
 
 def multi_save(piano_rolls, fname):
-    # Saves multiple tracks as one midi, for easy use within logic
+    """Saves multiple tracks as one midi, for easy use within logic"""
     midi = functions.Midi(70)  # number 70 is a placeholder to be rewritten
     tracks = []
     for i, name in enumerate(piano_rolls):
@@ -46,7 +46,7 @@ def multi_save(piano_rolls, fname):
 
 
 def generate_music(model, midi, temperature, length=24*4*4, threshold=0.5, noise=False):
-    # Generate some music!
+    """Generate some music!"""
     lookback = model.layers[0].input_shape[0][1]  # Changed as model is now no longer sequential.
     num_pitches = model.layers[0].input_shape[0][2]  # If sequential, remove 0 from both
 
@@ -97,7 +97,7 @@ def main():
     args = parser.parse_args()
 
     print("Using settings (Remember, no-noise is opposite)", args)
-    model = train.load_model(args.model)
+    model = functions.load_model(args.model)
     num_pitches = model.layers[0].input_shape[0][2]
 
     roller = functions.Midi(num_pitches)

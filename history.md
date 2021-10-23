@@ -54,3 +54,12 @@ Beat resolution: 4, Lookback: 8 bars (Very good results... almost too good, migh
 - v?: Train on more data for longer.
 - v?: Train on jazz
 - v?: Use a convnet to try and grab some patterns to start
+
+
+## New Idea (d7154)
+- Create two agents. Gru and Vector.
+  - Gru is the LSTM network created as before. It generates a new musical note based on the ones it has just seen
+  - Vector is a classifying agent that predicts if the music generated is made by Gru or if it is real. 
+- Train both and hopefully they will both get better, so that it is hard for us to distinguish the difference too
+- Thus Gru is trained to a sufficient level on the input data so it is outputting reasonable music. Then train vector on the real data as well as some random noise. Then train Vector on Gru WHILE GRU IS RUNNING. So it can use loss metrics to get better.
+- Is it too much of a long shot? No, surely not.

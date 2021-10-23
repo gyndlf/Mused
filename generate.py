@@ -1,7 +1,9 @@
 # d7043
-
+#
 # Generate music based on a seed
-# Generation functions
+# Generation functions:
+#
+# IS IRRESPECTIVE OF IF THE MODEL IS GRU OR VECTOR. JUST LOADS AND GOES
 
 import functions
 import numpy as np

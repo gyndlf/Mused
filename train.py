@@ -6,12 +6,13 @@
 import tensorflow as tf
 import generate
 import Gru
+import Vector
 
 
-class GenerateMusic(tf.keras.callbacks.Callback):
+class MakeMusic(tf.keras.callbacks.Callback):
     """Callback to generate music during training"""
     def __init__(self, gen_roll, gen_every=5, length=24*4*2, threshold=0.7, temp=0.5):
-        super(GenerateMusic, self).__init__()
+        super(MakeMusic, self).__init__()
         self.generated = {}
         self.gen_every = gen_every
         self.roll = gen_roll
@@ -81,7 +82,7 @@ def main():
     callbacks = [
         tf.keras.callbacks.EarlyStopping(patience=args.patience, restore_best_weights=False, monitor="loss"),
         # Stop early if training is only going ok
-        GenerateMusic(music.roll, gen_every=args.gen_every, temp=args.generate_temp),  # Generate some music
+        MakeMusic(music.roll, gen_every=args.gen_every, temp=args.generate_temp),  # Generate some music
         tf.keras.callbacks.ModelCheckpoint(gru.model_dir + gru.name + ".h5",
                                            save_best_only=True, monitor="loss"),
         tf.keras.callbacks.ProgbarLogger(),

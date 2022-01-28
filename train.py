@@ -5,32 +5,6 @@
 
 import tensorflow as tf
 import mused
-from generate import generate_music, multi_save
-
-
-class MakeMusic(tf.keras.callbacks.Callback):
-    """Callback to generate music during training"""
-    def __init__(self, gen_roll, gen_every=5, length=24*4*2, threshold=0.7, temp=0.5):
-        super(MakeMusic, self).__init__()
-        self.generated = {}
-        self.gen_every = gen_every
-        self.roll = gen_roll
-        self.length = length
-        self.threshold = threshold
-        self.temp = temp
-
-    def on_epoch_end(self, epoch, logs=None):
-        if epoch % self.gen_every == 0:
-            # Generate some music
-            self.generated["epoch-" + str(epoch + 1)] = generate_music(self.model, self.roll, self.temp,
-                                                                                length=self.length,
-                                                                                threshold=self.threshold, noise=True)
-
-    def on_train_end(self, logs=None):
-        self.generated["last-generation"] = generate_music(self.model, self.roll, self.temp,
-                                                                    length=self.length, threshold=self.threshold,
-                                                                    noise=True)
-        multi_save(self.generated, "out/generated/generated-during-training.mid")
 
 
 def main():
@@ -81,7 +55,7 @@ def main():
     callbacks = [
         tf.keras.callbacks.EarlyStopping(patience=args.patience, restore_best_weights=False, monitor="loss"),
         # Stop early if training is only going ok
-        MakeMusic(music.roll, gen_every=args.gen_every, temp=args.generate_temp),  # Generate some music
+        mused.MusicCallback(music.roll, gen_every=args.gen_every, temp=args.generate_temp),  # Generate some music
         tf.keras.callbacks.ModelCheckpoint(gru.model_dir + gru.name + ".h5",
                                            save_best_only=True, monitor="loss"),
         tf.keras.callbacks.ProgbarLogger(),

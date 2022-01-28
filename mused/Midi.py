@@ -138,7 +138,7 @@ class Midi: # TODO: Convert to its own file
         print('Saving file "', fname, '".')
         mt.write(fname)
 
-    def preview_data(self, midi_fname, fname='outputs/preview.mid', beat_resolution=None):
+    def preview_data(self, midi_fname, fname='out/generated/preview.mid', beat_resolution=None):
         """Test the functions to see if they work"""
         if beat_resolution is None:
             beat_resolution = self.beat_resolution

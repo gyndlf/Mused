@@ -4,11 +4,10 @@
 #
 # Predicts if the music is authentic or made by Gru
 
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import models
-import functions
+from .functions import save_model, load_model
 
 
 class Vector:
@@ -22,10 +21,10 @@ class Vector:
         self.model = model
 
     def load(self, fname):
-        self.model = functions.load_model(fname)
+        self.model = load_model(fname)
 
     def save(self, fname):
-        functions.save_model(self.model, fname)
+        save_model(self.model, fname)
 
     def build(self, lookback, num_pitches, loss='binary_crossentropy',):
         """Build a new model"""

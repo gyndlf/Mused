@@ -153,7 +153,6 @@ cython_debug/
 ### My ignores
 
 logs/
-models/
-outputs/
+out/
 .idea/
 

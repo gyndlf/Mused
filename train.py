@@ -4,9 +4,8 @@
 # Training model functions
 
 import tensorflow as tf
-import generate
-import Gru
-import Vector
+import mused
+from generate import generate_music, multi_save
 
 
 class MakeMusic(tf.keras.callbacks.Callback):
@@ -23,15 +22,15 @@ class MakeMusic(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         if epoch % self.gen_every == 0:
             # Generate some music
-            self.generated["epoch-" + str(epoch + 1)] = generate.generate_music(self.model, self.roll, self.temp,
+            self.generated["epoch-" + str(epoch + 1)] = generate_music(self.model, self.roll, self.temp,
                                                                                 length=self.length,
                                                                                 threshold=self.threshold, noise=True)
 
     def on_train_end(self, logs=None):
-        self.generated["last-generation"] = generate.generate_music(self.model, self.roll, self.temp,
+        self.generated["last-generation"] = generate_music(self.model, self.roll, self.temp,
                                                                     length=self.length, threshold=self.threshold,
                                                                     noise=True)
-        generate.multi_save(self.generated, "outputs/generated-during-training.mid")
+        multi_save(self.generated, "out/generated/generated-during-training.mid")
 
 
 def main():
@@ -65,19 +64,19 @@ def main():
     args = parser.parse_args()
 
     log_dir = "logs/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    music = functions.Midi(args.num_notes, beat_resolution=args.resolution)
+    music = mused.Midi(args.num_notes, beat_resolution=args.resolution)
     music.load_midi(args.midi)
     #music.display()
 
     x, y = music.vectorise(args.lookback, step=1)
     tempo = music.tempo
 
-    gru = Gru.Gru(args.name)
+    gru = mused.Gru(args.name)
     gru.build(args.lookback, args.num_notes, loss=args.loss)
 
     if args.model is not None:
         print("Loading model " + args.model + " to over-ride weights")
-        gru.model = functions.load_model(args.model)
+        gru.model = mused.load_model(args.model)
 
     callbacks = [
         tf.keras.callbacks.EarlyStopping(patience=args.patience, restore_best_weights=False, monitor="loss"),
@@ -100,6 +99,5 @@ if __name__ == '__main__':
     import os
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
     import argparse
-    import functions
     import datetime
     main()

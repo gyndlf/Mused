@@ -5,7 +5,7 @@
 #
 # IS IRRESPECTIVE OF IF THE MODEL IS GRU OR VECTOR. JUST LOADS AND GOES
 
-import functions
+import mused
 import numpy as np
 import pypianoroll
 
@@ -33,7 +33,7 @@ def extract_music(preds, temperature=1.0, threshold=None, noise=False):
 
 def multi_save(piano_rolls, fname):
     """Saves multiple tracks as one midi, for easy use within logic"""
-    midi = functions.Midi(70)  # number 70 is a placeholder to be rewritten
+    midi = mused.Midi(70)  # number 70 is a placeholder to be rewritten
     tracks = []
     for i, name in enumerate(piano_rolls):
         midi.load_np(piano_rolls[name])
@@ -49,8 +49,9 @@ def multi_save(piano_rolls, fname):
 
 def generate_music(model, midi, temperature, length=24*4*4, threshold=0.5, noise=False):
     """Generate some music!"""
-    lookback = model.layers[0].input_shape[0][1]  # Changed as model is now no longer sequential.
-    num_pitches = model.layers[0].input_shape[0][2]  # If sequential, remove 0 from both
+    print(model.layers[0].input_shape)
+    lookback = model.layers[0].input_shape[1]  # Changed as model is now no longer sequential.
+    num_pitches = model.layers[0].input_shape[2]  # If sequential, remove [0] from both before [1] and [2]
 
     start_index = np.random.randint(0, midi.shape[0] - lookback + 1)  # Random starting spot
     print('Generating with seed index of', start_index)
@@ -99,10 +100,11 @@ def main():
     args = parser.parse_args()
 
     print("Using settings (Remember, no-noise is opposite)", args)
-    model = functions.load_model(args.model)
-    num_pitches = model.layers[0].input_shape[0][2]
+    model = mused.functions.load_model(args.model)
+    model.summary()
+    num_pitches = model.layers[0].input_shape[2]  # if not sequential add [0] before [2]
 
-    roller = functions.Midi(num_pitches)
+    roller = mused.Midi(num_pitches)
     roller.load_midi([args.midi])
 
     print("Using length of %s and threshold of %s or potentially with noise (%s)" %
@@ -112,7 +114,7 @@ def main():
     for temp in args.temp:
         outputs["Temp-" + str(temp)] = generate_music(model, roller.roll, temp, length=args.length,
                                                       noise=args.no_noise, threshold=args.thresh)
-    multi_save(outputs, 'outputs/generated.mid')
+    multi_save(outputs, 'out/generated/generated.mid')
 
 
 if __name__ == '__main__':

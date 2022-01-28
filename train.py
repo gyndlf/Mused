@@ -86,7 +86,7 @@ def main():
         tf.keras.callbacks.ModelCheckpoint(gru.model_dir + gru.name + ".h5",
                                            save_best_only=True, monitor="loss"),
         tf.keras.callbacks.ProgbarLogger(),
-        tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+        # tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
     ]
 
     print("Training model with %s settings" % args)

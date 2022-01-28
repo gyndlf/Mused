@@ -31,9 +31,11 @@ class Gru:
         # model.add(layers.Dense(64, activation='relu'))
         #model.add(layers.Dense(num_pitches, activation='sigmoid'))
 
-        input_layer = layers.Input(shape=(lookback, num_pitches))
-        conv1 = layers.Conv1D(filters=32, kernel_size=8, strides=1, activation='relu', padding='same')(input_layer)
-        lstm1 = layers.LSTM(256, return_sequences=True)(conv1)
+        input_layer = layers.Input(shape=(lookback, num_pitches, 1))
+        conv1 = layers.Conv2D(32, (3,3), strides=1, activation='relu', padding='same')(input_layer)
+        max1 = layers.MaxPooling2D((1,1))(conv1)
+        reshape1 = layers.Reshape((lookback, num_pitches))(max1)
+        lstm1 = layers.LSTM(256, return_sequences=True)(reshape1)
         lstm2 = layers.LSTM(512, return_sequences=True)(lstm1)
         lstm3 = layers.LSTM(256, return_sequences=False)(lstm2)
         dropout1 = layers.Dropout(0.3)(lstm3)
@@ -72,3 +74,7 @@ class Gru:
         self.save(self.model_dir + self.name + ".h5")  # Save the model
         print('Full train took %s minutes.' % ((time() - tic) / 60).__round__(2))
         return historys
+
+if __name__ == '__main__':
+    g= Gru("dumb-dumb")
+    g.build(128, 50)

@@ -5,7 +5,6 @@
 #
 # IS IRRESPECTIVE OF IF THE MODEL IS GRU OR VECTOR. JUST LOADS AND GOES
 
-import mused
 
 # TODO:
 #  - Generate music in parallel
@@ -29,6 +28,8 @@ def main():
         '--thresh', default=0.5, type=float, help="Set threshold value. Default [0.5]"
     )
     args = parser.parse_args()
+
+    import mused
 
     print("Using settings (Remember, no-noise is opposite)", args)
     model = mused.functions.load_model(args.model)

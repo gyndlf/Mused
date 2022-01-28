@@ -3,7 +3,7 @@
 
 # The code containing the actual functions for the midi. Can be used across multiple model architectures
 # Basic midi <-> numpy interface
-import keras
+from tensorflow import keras
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow.keras import models

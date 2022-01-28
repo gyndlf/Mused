@@ -3,15 +3,12 @@
 # Train the specified model with input Midi
 # Training model functions
 
-import tensorflow as tf
-import mused
-
-
 def main():
     # Train the network from the command line
+    import argparse
     parser = argparse.ArgumentParser(description="Train the model using the input settings.")
     parser.add_argument(
-        'midi', type=str, nargs='+', help="Input midi file to train from. '+' for all")
+        'midi', type=str, nargs='+', help="Input midi file to train from. Use * for wildcard")
     parser.add_argument(
         '-r', '--resolution', type=int, required=False, default=24, help="Beat resolution of a quarter note (1/4) [24]")
     parser.add_argument(
@@ -37,6 +34,10 @@ def main():
 
     args = parser.parse_args()
 
+    import datetime
+    import tensorflow as tf
+    import mused
+
     log_dir = "logs/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     music = mused.Midi(args.num_notes, beat_resolution=args.resolution)
     music.load_midi(args.midi)
@@ -53,7 +54,7 @@ def main():
         gru.model = mused.load_model(args.model)
 
     callbacks = [
-        tf.keras.callbacks.EarlyStopping(patience=args.patience, restore_best_weights=False, monitor="loss"),
+        tf.keras.callbacks.EarlyStopping(patience=args.patience, restore_best_weights=True, monitor="loss"),
         # Stop early if training is only going ok
         mused.MusicCallback(music.roll, gen_every=args.gen_every, temp=args.generate_temp),  # Generate some music
         tf.keras.callbacks.ModelCheckpoint(gru.model_dir + gru.name + ".h5",
@@ -72,6 +73,4 @@ def main():
 if __name__ == '__main__':
     import os
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-    import argparse
-    import datetime
     main()

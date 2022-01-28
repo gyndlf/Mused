@@ -1,7 +1,12 @@
-# d7154
+""" d7154
 
-# Class for Gru.
-# (Moved from train.py)
+Class for Gru.
+
+Trys to extract the patterns from the preceding music and predict the next line
+
+Loss function is initially gussing the next notes, then it is outwitting vector
+
+"""
 
 from tensorflow import keras  # import from tensorflow for better support??? I dunno
 from tensorflow.keras import layers
@@ -12,7 +17,7 @@ from .functions import save_model, load_model
 
 class Gru:
     """The controlling class for the training model"""
-    def __init__(self, name, model_dir="out/models/"):
+    def __init__(self, name, model_dir="out/gru/"):
         self.model = None
         self.name = name
         self.model_dir = model_dir
@@ -22,8 +27,8 @@ class Gru:
         model = models.Sequential()
         model.add(layers.LSTM(256, input_shape=(lookback, num_pitches), return_sequences=True,
                              dropout=0.3, recurrent_dropout=0.3))
-        model.add(layers.LSTM(512, dropout=0.3, recurrent_dropout=0.2, return_sequences=True))
-        model.add(layers.LSTM(256, return_sequences=False))
+        #model.add(layers.LSTM(512, dropout=0.3, recurrent_dropout=0.2, return_sequences=True))
+        model.add(layers.LSTM(64, return_sequences=False))
         model.add(layers.Dense(256, activation='relu'))
         model.add(layers.Dropout(0.3))
         model.add(layers.Dense(64, activation='relu'))

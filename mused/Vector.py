@@ -1,8 +1,12 @@
-# d7154
-#
-# Vector model
-#
-# Predicts if the music is authentic or made by Gru
+""" d7154
+
+Class for Vector
+
+Trys to predict if the music is authentic or made by Gru
+
+Used once Gru can make decent music, and to simulate some forwards thinking
+
+"""
 
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -12,7 +16,7 @@ from .functions import save_model, load_model
 
 class Vector:
     """The Vector model to classify the type of music"""
-    def __init__(self, name, model_dir='models/'):
+    def __init__(self, name, model_dir='out/vector/'):
         self.name = name
         self.model_dir = model_dir
         self.model = None

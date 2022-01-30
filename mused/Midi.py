@@ -134,3 +134,8 @@ class Midi: # TODO: Convert to its own file
         self.cut = True
         self.load_midi([midi_fname])
         self.save(fname)
+
+
+if __name__ == "__main__":
+    m = Midi(50, beat_resolution=12)
+    m.preview_data("../resources/jazz/Caravan2.mid", fname="../out/generated/preview.mid")

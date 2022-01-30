@@ -58,7 +58,7 @@ class Midi: # TODO: Convert to its own file
             analysis = {"piano":0, "drums":0, "bass":0}
             for track in multitrack.tracks:
                 if not (self.is_bass(track) or self.is_piano(track) or self.is_drum(track)):
-                    print("WARNING: Unable to classify track: '%s'" % track.name.lower())
+                    print("WARNING: Unable to classify track: '%s'" % remove_non_ascii(track.name))
                     print("Please add the name to the list in Midi.py so this does not happen again!!")
                     sys.exit(-1)
                 elif self.is_piano(track):
@@ -167,6 +167,10 @@ class Midi: # TODO: Convert to its own file
         self.cut = True
         self.load_midi([midi_fname])
         self.save(fname)
+
+
+def remove_non_ascii(text: str) -> str:
+    return ''.join(i for i in text.lower() if i.isalpha())
 
 
 if __name__ == "__main__":

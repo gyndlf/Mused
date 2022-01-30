@@ -38,7 +38,7 @@ def main():
     import tensorflow as tf
     import mused
 
-    log_dir = "logs/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    log_dir = "logs/" + datetime.datetime.now().strftime("%Y.%m.%d-%H:%M:%S")
     music = mused.Midi(args.num_notes, beat_resolution=args.resolution)
     music.load_midi(args.midi)
     #music.display()
@@ -60,7 +60,7 @@ def main():
         tf.keras.callbacks.ModelCheckpoint(gru.model_dir + gru.name + ".h5",
                                            save_best_only=True, monitor="loss"),
         tf.keras.callbacks.ProgbarLogger(),
-        # tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+        tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
     ]
 
     print("Training model with %s settings" % args)

@@ -47,7 +47,7 @@ def main():
         outputs["Temp-" + str(temp)] = mused.generate_music(model, roller.roll, temp, length=args.length,
                                                       noise=args.no_noise, threshold=args.thresh)
     mused.multi_save(outputs, 'out/generated/generated.mid')
-
+    # TODO: Add track of the original phrase and what it should sound like
 
 if __name__ == '__main__':
     main()

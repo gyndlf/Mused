@@ -1,10 +1,14 @@
 import numpy as np
 import pypianoroll
 import matplotlib.pyplot as plt
+import sys
 
 
 MIDDLE_C = 64
 MIDI_INPUTS = 128  # Length the rolls pitches must be
+DRUM_NAMES = ["drums", "congos", "cymbals", "hits"]
+PIANO_NAMES = ["piano"]
+BASS_NAMES = ["bass"]
 
 
 class Midi: # TODO: Convert to its own file
@@ -26,6 +30,17 @@ class Midi: # TODO: Convert to its own file
         plt.title(title)
         plt.show()
 
+    def is_piano(self, track: pypianoroll.Track) -> bool:
+        return track.name.lower() in PIANO_NAMES
+
+
+    def is_drum(self, track: pypianoroll.Track) -> bool:
+        return track.is_drum or (track.name.lower() in DRUM_NAMES)
+
+
+    def is_bass(self, track: pypianoroll.Track) -> bool:
+        return track.name.lower() in BASS_NAMES
+
     def load_midi(self, fnames):
         """Load the midi, process it and save"""
         if self.cut:
@@ -39,6 +54,24 @@ class Midi: # TODO: Convert to its own file
             multitrack = pypianoroll.read(fname)
             multitrack.set_resolution(self.beat_resolution)
             self.tempo = multitrack.tempo.mean()
+
+            analysis = {"piano":0, "drums":0, "bass":0}
+            for track in multitrack.tracks:
+                if not (self.is_bass(track) or self.is_piano(track) or self.is_drum(track)):
+                    print("WARNING: Unable to classify track: '%s'" % track.name.lower())
+                    print("Please add the name to the list in Midi.py so this does not happen again!!")
+                    sys.exit(-1)
+                elif self.is_piano(track):
+                    analysis["piano"] += 1
+                elif self.is_bass(track):
+                    analysis["bass"] += 1
+                elif self.is_drum(track):
+                    analysis["drums"] += 1
+
+            print("Track analysis complete of", analysis)
+
+            multitrack.tracks[:] = [x for x in multitrack.tracks if (not (self.is_drum(x) or self.is_bass(x))) and self.is_piano(x)]
+
             # piano_multitrack.trim_trailing_silence()
             roll = multitrack.binarize().blend('any')
             print('---')
@@ -137,5 +170,5 @@ class Midi: # TODO: Convert to its own file
 
 
 if __name__ == "__main__":
-    m = Midi(50, beat_resolution=12)
+    m = Midi(60, beat_resolution=24)
     m.preview_data("../resources/jazz/Caravan2.mid", fname="../out/generated/preview.mid")

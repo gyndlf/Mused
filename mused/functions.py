@@ -92,16 +92,14 @@ def multi_save(piano_rolls, fname):
 
 def generate_music(model, midi, temperature, length=24*4*4, threshold=0.5, noise=False):
     """Generate some music!"""
-    print(model.layers[0].input_shape)
     lookback = model.layers[0].input_shape[1]  # Changed as model is now no longer sequential.
     num_pitches = model.layers[0].input_shape[2]  # If sequential, remove [0] from both before [1] and [2]
 
     start_index = np.random.randint(0, midi.shape[0] - lookback + 1)  # Random starting spot
-    print('Generating with seed index of', start_index)
     seed = midi[start_index:start_index + lookback, :]
     seed = np.reshape(seed, (1, seed.shape[0], seed.shape[1]))  # np.expanddim to orig
 
-    print('Generating roll with temp', temperature, 'and length', length)
+    print('Generating roll with temp', temperature, 'at seed index of', start_index)
     sampled = seed.copy()
 
     output = np.zeros((1, length + lookback, num_pitches))

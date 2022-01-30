@@ -26,8 +26,8 @@ class Gru:
         # Build the model architecture
         model = models.Sequential()
         model.add(layers.LSTM(256, input_shape=(lookback, num_pitches), return_sequences=True,
-                             dropout=0.3, recurrent_dropout=0.3))
-        #model.add(layers.LSTM(512, dropout=0.3, recurrent_dropout=0.2, return_sequences=True))
+                             dropout=0.3))
+        model.add(layers.LSTM(256, dropout=0.3, return_sequences=True))
         model.add(layers.LSTM(64, return_sequences=False))
         model.add(layers.Dense(256, activation='relu'))
         model.add(layers.Dropout(0.3))

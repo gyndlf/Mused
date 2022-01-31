@@ -7,9 +7,9 @@ import sys
 MIDDLE_C = 64
 MIDI_INPUTS = 128  # Length the rolls pitches must be
 DRUM_NAMES = ["drums", "congos", "cymbals", "hits"]
-PIANO_NAMES = ["piano", "accoustic piano", 'melody  (bb)']
+PIANO_NAMES = ["piano", "accoustic piano", "guitar", "flutevibes"]
 BASS_NAMES = ["bass", "fretless bass"]
-
+OTHER_NAMES = ["mute trumpet", "alto", "tenor", "trombone", "he harmonica", "she flute"]
 
 class Midi: 
     """Is the controlling class for Midi. Can input multiple files to merge"""
@@ -31,15 +31,18 @@ class Midi:
         plt.show()
 
     def is_piano(self, track: pypianoroll.Track) -> bool:
-        return track.name.lower().encode("ascii", errors="ignore") in PIANO_NAMES
+        return remove_non_ascii(track.name) in PIANO_NAMES or track.program < 32
 
 
     def is_drum(self, track: pypianoroll.Track) -> bool:
-        return track.is_drum or (track.name.lower().encode("ascii", errors="ignore") in DRUM_NAMES)
+        return track.is_drum or (remove_non_ascii(track.name) in DRUM_NAMES)
 
 
     def is_bass(self, track: pypianoroll.Track) -> bool:
-        return track.name.lower().encode("ascii", errors="ignore") in BASS_NAMES
+        return remove_non_ascii(track.name) in BASS_NAMES or (track.program > 31 and track.program < 40)
+
+    def is_other(self, track: pypianoroll.Track) -> bool:
+        return remove_non_ascii(track.name) in OTHER_NAMES or track.program > 39
 
     def load_midi(self, fnames):
         """Load the midi, process it and save"""
@@ -51,29 +54,35 @@ class Midi:
         rolls = []
         roll_length = 0
         for fname in fnames:
+            print('---')
+            print("Loading", fname)
             multitrack = pypianoroll.read(fname)
             multitrack.set_resolution(self.beat_resolution)
             self.tempo = multitrack.tempo.mean()
-            print('---')
-            print("Loading", fname)
 
-            analysis = {"piano":0, "drums":0, "bass":0}
+            analysis = {"piano":0, "drums":0, "bass":0, "other":0}
             for track in multitrack.tracks:
-                if not (self.is_bass(track) or self.is_piano(track) or self.is_drum(track)):
-                    print("WARNING: Unable to classify track:", track.name.lower())
-                    print("Please add the name to the list in Midi.py so this does not happen again!!")
-                    sys.exit(-1)
-                elif self.is_piano(track):
+                if self.is_piano(track):
                     analysis["piano"] += 1
                 elif self.is_bass(track):
                     analysis["bass"] += 1
                 elif self.is_drum(track):
                     analysis["drums"] += 1
+                elif self.is_other(track):
+                    analysis["other"] += 1
+                else:
+                    print("WARNING: Unable to classify track: '%s'" % remove_non_ascii(track.name))
+                    print("Please add the name to the list in Midi.py so this does not happen again!!")
+                    print("Program:", track.program)
+                    sys.exit(-1)
 
             print("...Track analysis of", analysis)
 
-            multitrack.tracks[:] = [x for x in multitrack.tracks if (not (self.is_drum(x) or self.is_bass(x))) and self.is_piano(x)]
+            multitrack.tracks[:] = [x for x in multitrack.tracks if (not (self.is_drum(x) or self.is_bass(x) or self.is_other(x))) and self.is_piano(x)]
 
+            if multitrack.tracks.__len__() == 0:
+                print("...No piano!")
+                continue
             # piano_multitrack.trim_trailing_silence()
             roll = multitrack.binarize().blend('any')
             print('...Input shape:', roll.shape)
@@ -168,6 +177,10 @@ class Midi:
         self.cut = True
         self.load_midi([midi_fname])
         self.save(fname)
+
+
+def remove_non_ascii(text: str) -> str:
+    return ''.join(i for i in text.lower() if i.isalpha() or i == " ")
 
 
 if __name__ == "__main__":

@@ -217,6 +217,7 @@ class Midi:
             new_roll[index:index + self.roll.shape[0], :] = np.roll(self.roll, -i * v_step, axis=1)
             index += self.roll.shape[0]
         self.roll = new_roll
+        print("New shape of", self.roll.shape)
 
 
 def remove_non_ascii(text: str) -> str:

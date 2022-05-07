@@ -34,7 +34,7 @@ def main():
     parser.add_argument(
         "-a", "--augments", type=int, required=False, default=0, help="Number of augmentations to use [0]")
     parser.add_argument(
-        "--augments-steps", type=int, required=False, default=5, help="Gap between augmentations [5]")
+        "--aug-step", type=int, required=False, default=5, help="Gap between augmentations [5]")
 
     args = parser.parse_args()
 
@@ -64,8 +64,9 @@ def main():
         tf.keras.callbacks.EarlyStopping(patience=args.patience, restore_best_weights=True, monitor="loss"),
         # Stop early if training is only going ok
         mused.MusicCallback(music.roll, gen_every=args.gen_every, temp=args.generate_temp),  # Generate some music
-        tf.keras.callbacks.ModelCheckpoint(gru.model_dir + gru.name + ".h5",
+        tf.keras.callbacks.ModelCheckpoint(gru.model_dir + gru.name + "-best.h5",
                                            save_best_only=True, monitor="loss"),
+        tf.keras.callbacks.ModelCheckpoint(gru.model_dir + gru.name + "-last.h5", monitor="loss"),
         tf.keras.callbacks.ProgbarLogger(),
         tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
     ]

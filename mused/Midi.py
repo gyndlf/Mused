@@ -11,7 +11,28 @@ PIANO_NAMES = ["piano"]
 BASS_NAMES = ["bass"]
 
 
-class Midi: # TODO: Convert to its own file
+def is_drum(track: pypianoroll.Track) -> bool:
+    for n in DRUM_NAMES:
+        if n in track.name.lower():
+            return True
+    return track.is_drum
+
+
+def is_piano(track: pypianoroll.Track) -> bool:
+    for n in PIANO_NAMES:
+        if n in track.name.lower():
+            return True
+    return False
+
+
+def is_bass(track: pypianoroll.Track) -> bool:
+    for n in BASS_NAMES:
+        if n in track.name.lower():
+            return True
+    return False
+
+
+class Midi:
     """Is the controlling class for Midi. Can input multiple files to merge"""
     def __init__(self, num_pitches, beat_resolution=24, cut=True):
         self.beat_resolution = beat_resolution  # 24 has full 3/4 and 4/4 timings. 12 is ok. Is time-steps per quarter
@@ -30,17 +51,6 @@ class Midi: # TODO: Convert to its own file
         plt.title(title)
         plt.show()
 
-    def is_piano(self, track: pypianoroll.Track) -> bool:
-        return track.name.lower() in PIANO_NAMES
-
-
-    def is_drum(self, track: pypianoroll.Track) -> bool:
-        return track.is_drum or (track.name.lower() in DRUM_NAMES)
-
-
-    def is_bass(self, track: pypianoroll.Track) -> bool:
-        return track.name.lower() in BASS_NAMES
-
     def load_midi(self, fnames):
         """Load the midi, process it and save"""
         if self.cut:
@@ -57,20 +67,21 @@ class Midi: # TODO: Convert to its own file
 
             analysis = {"piano":0, "drums":0, "bass":0}
             for track in multitrack.tracks:
-                if not (self.is_bass(track) or self.is_piano(track) or self.is_drum(track)):
+                if not (is_bass(track) or is_piano(track) or is_drum(track)):
                     print("WARNING: Unable to classify track: '%s'" % remove_non_ascii(track.name))
                     print("Please add the name to the list in Midi.py so this does not happen again!!")
-                    sys.exit(-1)
-                elif self.is_piano(track):
+                    return -1
+                elif is_piano(track):
                     analysis["piano"] += 1
-                elif self.is_bass(track):
+                elif is_bass(track):
                     analysis["bass"] += 1
-                elif self.is_drum(track):
+                elif is_drum(track):
                     analysis["drums"] += 1
 
             print("Track analysis complete of", analysis)
 
-            multitrack.tracks[:] = [x for x in multitrack.tracks if (not (self.is_drum(x) or self.is_bass(x))) and self.is_piano(x)]
+            multitrack.tracks[:] = [x for x in multitrack.tracks if (not (
+                            is_drum(x) or is_bass(x))) and is_piano(x)]
 
             # piano_multitrack.trim_trailing_silence()
             roll = multitrack.binarize().blend('any')
@@ -156,7 +167,7 @@ class Midi: # TODO: Convert to its own file
         t = pypianoroll.BinaryTrack(pianoroll=roll, program=0, is_drum=False, name='Exported Pianoroll')
         mt = pypianoroll.Multitrack(tracks=[t])
         mt.clip()  # Make sure there aren't any crazy values
-        print('Saving file "', fname, '".')
+        print('Saving file "' + fname + '"')
         mt.write(fname)
 
     def preview_data(self, midi_fname, fname='out/generated/preview.mid', beat_resolution=None):
@@ -166,7 +177,25 @@ class Midi: # TODO: Convert to its own file
         print('Extracting "' + midi_fname + '" with beat resolution of', beat_resolution)
         self.cut = True
         self.load_midi([midi_fname])
+        self.augment(2)
         self.save(fname)
+
+    def augment(self, n_augments:int, v_step:int=5):
+        """Augment the data by shifting the piano roll up and down. n_augments is taken to be even"""
+        if self.roll is None:
+            print("No roll to augment!")
+            return
+
+        new_roll = np.zeros((self.roll.shape[0]*((n_augments//2)*2+1), self.num_pitches), dtype=bool)
+        new_roll[:self.roll.shape[0], :] = self.roll  # add the beginning of the roll back
+        index = self.roll.shape[0]
+        print("Augmenting the roll", n_augments, "times with a separation of", v_step)
+        for i in range(1, n_augments//2+1):
+            new_roll[index:index+self.roll.shape[0], :] = np.roll(self.roll, i*v_step, axis=1)
+            index += self.roll.shape[0]
+            new_roll[index:index + self.roll.shape[0], :] = np.roll(self.roll, -i * v_step, axis=1)
+            index += self.roll.shape[0]
+        self.roll = new_roll
 
 
 def remove_non_ascii(text: str) -> str:

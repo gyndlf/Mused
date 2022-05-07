@@ -4,7 +4,7 @@ Class for Gru.
 
 Trys to extract the patterns from the preceding music and predict the next line
 
-Loss function is initially gussing the next notes, then it is outwitting vector
+Loss function is initially guessing the next notes, then it is outwitting vector
 
 """
 
@@ -25,8 +25,7 @@ class Gru:
     def build(self, lookback, num_pitches, loss='binary_crossentropy'):
         # Build the model architecture
         model = models.Sequential()
-        model.add(layers.LSTM(256, input_shape=(lookback, num_pitches), return_sequences=True,
-                             dropout=0.3))
+        model.add(layers.LSTM(256, input_shape=(lookback, num_pitches), return_sequences=True, dropout=0.3))
         model.add(layers.LSTM(256, dropout=0.3, return_sequences=True))
         model.add(layers.LSTM(64, return_sequences=False))
         model.add(layers.Dense(256, activation='relu'))

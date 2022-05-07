@@ -155,4 +155,5 @@ cython_debug/
 logs/
 out/
 .idea/
+resources/
 

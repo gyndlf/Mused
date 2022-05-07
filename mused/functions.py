@@ -99,7 +99,7 @@ def generate_music(model, midi, temperature, length=24*4*4, threshold=0.5, noise
     seed = midi[start_index:start_index + lookback, :]
     seed = np.reshape(seed, (1, seed.shape[0], seed.shape[1]))  # np.expanddim to orig
 
-    print('Generating roll with temp', temperature, 'at seed index of', start_index)
+    print('\rGenerating roll with temp', temperature, 'at seed index of', start_index)
     sampled = seed.copy()
 
     output = np.zeros((1, length + lookback, num_pitches))

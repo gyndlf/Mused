@@ -19,6 +19,7 @@ class MusicCallback(tf.keras.callbacks.Callback):
             self.generated["epoch-" + str(epoch + 1)] = generate_music(self.model, self.roll, self.temp,
                                                                                 length=self.length,
                                                                                 threshold=self.threshold, noise=True)
+            multi_save(self.generated, "out/generated/generated-during-training.mid")
 
     def on_train_end(self, logs=None):
         self.generated["last-generation"] = generate_music(self.model, self.roll, self.temp,

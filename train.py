@@ -34,7 +34,7 @@ def main():
     parser.add_argument(
         "-a", "--augments", type=int, required=False, default=0, help="Number of augmentations to use [0]")
     parser.add_argument(
-        "--aug-step", type=int, required=False, default=5, help="Gap between augmentations [5]")
+        "--aug-step", type=int, required=False, default=1, help="Gap between augmentations [1]")
 
     args = parser.parse_args()
 
@@ -51,7 +51,7 @@ def main():
     tempo = music.tempo
 
     if args.augments > 0:
-        music.augment(args.augments, args.augments_steps)
+        music.augment(args.augments, args.aug_step)
 
     gru = mused.Gru(args.name)
     gru.build(args.lookback, args.num_notes, loss=args.loss)

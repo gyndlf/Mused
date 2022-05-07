@@ -31,6 +31,10 @@ def main():
         "-b", "--batch", type=int, required=False, default=128, help="Batch size [128]")
     parser.add_argument(
         "--model", type=str, required=False, default=None, help="Model to continue to train from [None]")
+    parser.add_argument(
+        "-a", "--augments", type=int, required=False, default=0, help="Number of augmentations to use [0]")
+    parser.add_argument(
+        "--augments-steps", type=int, required=False, default=5, help="Gap between augmentations [5]")
 
     args = parser.parse_args()
 
@@ -45,6 +49,9 @@ def main():
 
     x, y = music.vectorise(args.lookback, step=1)
     tempo = music.tempo
+
+    if args.augments > 0:
+        music.augment(args.augments, args.augments_steps)
 
     gru = mused.Gru(args.name)
     gru.build(args.lookback, args.num_notes, loss=args.loss)

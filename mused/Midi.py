@@ -99,7 +99,8 @@ class Midi:
 
             print("...Track analysis of", analysis)
 
-            multitrack.tracks[:] = [x for x in multitrack.tracks if (not (is_drum(x) or is_bass(x) or is_other(x))) and self.is_piano(x)]
+            multitrack.tracks[:] = [x for x in multitrack.tracks if (not (is_drum(x) or is_bass(x) or is_other(x)))
+                                    and is_piano(x)]
 
             if multitrack.tracks.__len__() == 0:
                 print("...No piano!")
